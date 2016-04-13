@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans
+ http://www.springframework.org/schema/beans/spring-beans.xsd">
+	
+	<bean id="streamMessageConverter" class="com.saic.ebiz.vbox.mq.StreamMessageConverter">
+		<property name="expiratedTime" value="1000" />
+	</bean>
+	
+	<!-- Message Receiver Definition -->
+	<bean id="queueMessageListener" class="com.saic.ebiz.vbox.mq.QueueMessageListener" >
+		<property name="messageConverter" ref="streamMessageConverter" />
+	</bean>
+	<bean class="org.springframework.jms.listener.SimpleMessageListenerContainer" init-method="start">
+		<property name="connectionFactory" ref="connectionFactory" />
+		<property name="destinationName" value="LITEPLUS-SRD" />
+		<property name="messageListener" ref="queueMessageListener" />
+		<property name="receiveTimeout" value="2000" />
+		<property name="concurrentConsumers" value="1" />
+		<property name="maxConcurrentConsumers" value="3" />
+	</bean>
+
+</beans>

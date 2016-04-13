@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:context="http://www.springframework.org/schema/context"
+	xsi:schemaLocation="
+		http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+		http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd">
+
+	<context:component-scan base-package="com.saic.ebiz.vbox" />
+	<!-- <import resource="classpath:conf/venus/applicationContext-venus-placeholder.xml"/> -->
+	<import resource="classpath:conf/spring/spring-beans.xml"/>
+	<!-- <import resource="classpath:conf/spring/spring-mq.xml"/> -->
+	<!-- <import resource="classpath:conf/spring/spring-dal-ms.xml"/> -->
+	
+	<bean id="gprsServerBootstrap" class="com.saic.ebiz.vbox.GprsServerBootstrap" 
+		init-method="start" destroy-method="stop" scope="singleton">
+		<property name="connectionTimeout" value="${ebiz.liteplus.netty.connectionTimeout}" />
+		<property name="port" value="${ebiz.liteplus.netty.port}" />
+	</bean>		
+	
+	<!-- 本地配置文件或者读取ucm配置 -->
+	<context:property-placeholder location="classpath:mongodb.properties" />
+	<bean id="mongoDBUtil" class="com.saic.ebiz.vbox.utils.MongoDBUtil" init-method="init" scope="singleton">
+		<property name="defaultDbName" value="${ebiz.liteplus.mongodb.dbName}"/>
+		<property name="defaultCollName" value="${ebiz.liteplus.mongodb.defaultCollName}"/>
+		<property name="mongoServerUrl" value="${ebiz.liteplus.mongodb.replicationSet}"/>
+		<property name="connectionPerHost" value="${ebiz.liteplus.mongodb.connectionPerHost}"/>
+		<property name="connectionMultiplier" value="${ebiz.liteplus.mongodb.threadsAllowedToBlockForConnectionMultiplier}"/>
+		<property name="socketTimeout" value="${ebiz.liteplus.mongodb.socketTimeout}"/>
+		<property name="maxWaitTime" value="${ebiz.liteplus.mongodb.maxWaitTime}"/>
+		<property name="connectionTimeout" value="${ebiz.liteplus.mongodb.connectionTimeout}"/>
+	</bean>	
+		
+</beans>

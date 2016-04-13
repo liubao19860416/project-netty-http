@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans
+ http://www.springframework.org/schema/beans/spring-beans.xsd">
+
+	<!-- Activemq connection factory -->
+	<bean id="amqConnectionFactory" class="org.apache.activemq.ActiveMQConnectionFactory">
+		<constructor-arg index="0" value="failover:(tcp://10.32.172.20:61616,tcp://10.32.172.21:61616)?randomize=false" />
+	</bean>
+	<!-- ConnectionFactory Definition -->
+	<bean id="connectionFactory" class="org.springframework.jms.connection.CachingConnectionFactory">
+		<constructor-arg ref="amqConnectionFactory" />
+	</bean>
+	<!-- Default Destination Queue Definition -->
+	<bean id="destination" class="org.apache.activemq.command.ActiveMQQueue">
+		<!-- 设置队列名字 -->
+		<constructor-arg index="0" value="LITEPLUS-GPRS" />
+	</bean>
+	<!-- JmsTemplate Definition -->
+	<bean id="jmsTemplate" class="org.springframework.jms.core.JmsTemplate">
+		<property name="connectionFactory" ref="connectionFactory" />
+		<property name="defaultDestination" ref="destination" />
+		<property name="explicitQosEnabled" value="true" />
+		<property name="pubSubDomain" value="false" />
+		<!-- 发送模式 DeliveryMode.NON_PERSISTENT=1:非持久 ; DeliveryMode.PERSISTENT=2:持久 -->
+		<property name="deliveryMode" value="1" />
+	</bean>
+	<!-- Message Sender Definition -->
+	<bean id="messageSender" class="com.saic.ebiz.vbox.mq.MessageSender">
+		<constructor-arg index="0" ref="jmsTemplate" />
+	</bean>
+
+</beans>

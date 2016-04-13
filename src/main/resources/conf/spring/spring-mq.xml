@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans
+     http://www.springframework.org/schema/beans/spring-beans-2.0.xsd">
+
+	<!-- Message Sender Definition-->
+	<bean id="activeMQconnectionFactory" class="org.apache.activemq.spring.ActiveMQConnectionFactory">
+		<property name="brokerURL" value="${component.activemq.broker.url}" />
+	</bean>
+	<bean id="connectionFactory" class="org.springframework.jms.connection.CachingConnectionFactory">
+		<constructor-arg ref="activeMQconnectionFactory" />
+	</bean>
+	<bean id="destination" class="org.apache.activemq.command.ActiveMQQueue">
+		<!-- 设置队列名字 -->
+		<constructor-arg index="0" value="${ebiz.liteplus.gprs.jms.queue.name}" />
+	</bean>
+	<bean id="jmsTemplate" class="org.springframework.jms.core.JmsTemplate">
+		<property name="connectionFactory" ref="connectionFactory" />
+		<property name="defaultDestination" ref="destination" />
+		<property name="explicitQosEnabled" value="true" />
+		<property name="pubSubDomain" value="false" />
+		<!-- 发送模式 DeliveryMode.NON_PERSISTENT=1:非持久 ; DeliveryMode.PERSISTENT=2:持久 -->
+		<property name="deliveryMode" value="${jms.deliveryMode}" />
+	</bean>
+	<bean id="queueMessageSender" class="com.saic.ebiz.vbox.mq.QueueMessageSender">
+		<property name="jmsTemplate" ref="jmsTemplate" />
+		<property name="messageConverter" ref="streamMessageConverter" />
+		<property name="receiveTimeout" value="${jms.queue.receiveTimeout}" />
+	</bean>
+	<bean id="streamMessageConverter" class="com.saic.ebiz.vbox.mq.StreamMessageConverter">
+		<property name="expiratedTime" value="${jms.queue.expiratedTime}" />
+	</bean>
+	
+	<!-- Message Receiver Definition-->
+	<bean id="queueMessageListener" class="com.saic.ebiz.vbox.mq.QueueMessageListener" >
+		<property name="messageConverter" ref="streamMessageConverter" />
+	</bean>
+	<bean class="org.springframework.jms.listener.DefaultMessageListenerContainer" init-method="start">
+		<property name="connectionFactory" ref="connectionFactory" />
+		<property name="destination" ref="destination" />
+		<property name="messageListener" ref="queueMessageListener" />
+		<!-- mq队列侦听器侦听间隔 -->
+		<property name="receiveTimeout" value="${jms.queue.receiveTimeout}" />
+		<!-- 指定的并发用户数量 -->
+		<property name="concurrentConsumers" value="${jms.queue.concurrentConsumers}" />
+		<property name="maxConcurrentConsumers" value="${jms.queue.maxConcurrentConsumers}" />
+	</bean>
+
+</beans> 

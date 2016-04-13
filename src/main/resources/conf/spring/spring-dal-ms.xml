@@ -1,0 +1,112 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:cxf="http://cxf.apache.org/core"
+    xmlns:p="http://cxf.apache.org/policy" xmlns:ss="http://www.springframework.org/schema/security"
+    xmlns:jaxws="http://cxf.apache.org/jaxws" xmlns:jee="http://www.springframework.org/schema/jee"
+    xmlns:aop="http://www.springframework.org/schema/aop" xmlns:context="http://www.springframework.org/schema/context"
+    xmlns:tx="http://www.springframework.org/schema/tx" xmlns:rws="http://code.cn.ibm.com/schema/spring/rws"
+    xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+    http://cxf.apache.org/core http://cxf.apache.org/schemas/core.xsd
+    http://cxf.apache.org/jaxws http://cxf.apache.org/schemas/jaxws.xsd
+    http://cxf.apache.org/policy http://cxf.apache.org/schemas/policy.xsd
+    http://www.springframework.org/schema/jee http://www.springframework.org/schema/jee/spring-jee.xsd
+    http://cxf.apache.org/bindings/soap http://cxf.apache.org/schemas/configuration/soap.xsd
+    http://www.springframework.org/schema/context  http://www.springframework.org/schema/context/spring-context.xsd
+    http://www.springframework.org/schema/security http://www.springframework.org/schema/security/spring-security.xsd
+    http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop.xsd
+    http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx.xsd
+    http://code.cn.ibm.com/schema/spring/rws http://code.cn.ibm.com/schema/spring/rws.xsd">
+
+	<aop:aspectj-autoproxy proxy-target-class="true" />
+    <context:annotation-config />
+
+    <!-- DAL客户端接口实现 -->
+    <bean id="dalClientMs" class="com.ibm.framework.dal.client.support.PaginationDalClient">
+        <!-- SQL的Xml配置路径 -->
+        <property name="resources" value="classpath*:sqlMap/sqlMap_*.xml" />
+        <!-- 定义默义的数据源 （可以指定原生数据源或读写分离数据源） -->
+        <property name="defaultDataSource" ref="groupMsDataSourceOne" />
+    </bean>
+ 
+    <!-- 读写分离数据源1 -->
+    <bean id="groupMsDataSourceOne" class="com.ibm.framework.dal.group.GroupDataSource">
+        <property name="dataSourceGroup" ref="dsMsGroupOne"></property>
+    </bean>
+    
+    <!-- 读写分离数据源分组1 -->
+    <rws:ds_group id="dsMsGroupOne">
+        <!-- 写数据库 -->
+        <rws:wr_ds name="master" ref="dataSourceMs" type="mysql" />
+        <!-- 读数据库 -->
+        <rws:ro_ds name="slave1" ref="dataSourceMs" weight="100"
+            type="mysql" />
+    </rws:ds_group>
+    
+ 
+    <!-- TODO:真正部署时此连接池参数需要优化调整 -->
+    <bean id="dataSourceMs" class="org.apache.commons.dbcp.BasicDataSource" destroy-method="close">
+        <property name="driverClassName" value="com.mysql.jdbc.Driver"/>
+        <property name="url" value="${ebiz.liteplus.db.url}" />
+        <property name="username" value="${ebiz.liteplus.db.username}" />
+        <property name="password" value="${ebiz.liteplus.db.password}" />
+        <!--initialSize: 初始化连接 -->
+        <property name="initialSize" value="${component.dbcp.initialSize}" />
+        <!--maxIdle: 最大空闲连接 -->
+        <property name="maxIdle" value="${component.dbcp.maxIdle}" />
+        <!--minIdle: 最小空闲连接 -->
+        <property name="minIdle" value="${component.dbcp.minIdle}" />
+        <!--maxActive: 最大连接数量 -->
+        <property name="maxActive" value="${component.dbcp.maxActive}" />
+        <!--removeAbandoned: 是否自动回收超时连接 -->
+        <property name="removeAbandoned" value="${component.dbcp.removeAbandoned}" />
+        <!--removeAbandonedTimeout: 超时时间(以秒数为单位) -->
+        <property name="removeAbandonedTimeout" value="${component.dbcp.removeAbandonedTimeout}" />
+        <!--maxWait: 超时等待时间以毫秒为单位 6000毫秒/1000等于60秒 -->
+        <property name="maxWait" value="${component.dbcp.maxWait}" />
+        <property name="testWhileIdle" value="${component.dbcp.testWhileIdle}" />
+        <property name="testOnBorrow" value="${component.dbcp.testOnBorrow}" />
+        <property name="timeBetweenEvictionRunsMillis" value="${ebiz.liteplus.db.timeBetweenEvictionRunsMillis}" />
+        <property name="minEvictableIdleTimeMillis" value="${ebiz.liteplus.db.minEvictableIdleTimeMillis}"/>
+        <property name="validationQuery">
+            <value>SELECT 1</value>
+        </property>
+    </bean>
+    
+    <bean id="mysqlDialect" class="com.ibm.framework.dal.dialect.impl.MySQLDialect" />
+    <bean id="dialectFactory" class="com.ibm.framework.dal.dialect.DialectFactory">
+        <property name="mapDialect">
+            <map>
+                <entry key="mysql">
+                    <ref bean="mysqlDialect" />
+                </entry>
+            </map>
+        </property>
+    </bean>
+    
+        <!-- 定义事务管理拦截器 -->
+    <bean id="transactionInterceptor" class="com.ibm.framework.dal.transaction.advisor.TransactionInterceptor">
+        <!-- 注入DAL客户端接口 -->
+        <property name="dalClient" ref="dalClientMs" />
+    </bean>
+    
+    <!-- 定义bean自动代理容器 -->
+    <bean class="org.springframework.aop.framework.autoproxy.BeanNameAutoProxyCreator">
+        <property name="interceptorNames" >
+            <list>
+                <!-- 配置拦截器  -->
+                <value>transactionInterceptor</value>
+            </list>
+        </property>
+        <property name="beanNames">
+            <list>
+                <!-- 需要拦截serivce的beanName,支持通配-->
+                <value>*Service</value>
+            </list>
+        </property>
+        <!-- 根据Target类型动态使用代理技术(proxy与cglib) -->
+        <property name="proxyTargetClass" value="true"/>
+        <!-- 暴露代理对象，可以使用AopContext --> 
+        <property name="exposeProxy" value="true"/>
+    </bean>
+	
+</beans>
