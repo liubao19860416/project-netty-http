@@ -77,6 +77,7 @@ public class RedisClient {
         System.out.println(value);
     }
     
+    
     static {
         uri1="redis://:"+auth1+"@"+host1+":"+port1+"/"+dbIndex1;
         uri2="redis://:"+auth2+"@"+host2+":"+port2+"/"+dbIndex2;
