@@ -1,0 +1,86 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:cxf="http://cxf.apache.org/core"
+    xmlns:p="http://cxf.apache.org/policy" xmlns:ss="http://www.springframework.org/schema/security"
+    xmlns:jaxws="http://cxf.apache.org/jaxws" xmlns:jee="http://www.springframework.org/schema/jee"
+    xmlns:aop="http://www.springframework.org/schema/aop" xmlns:context="http://www.springframework.org/schema/context"
+    xmlns:tx="http://www.springframework.org/schema/tx" xmlns:rws="http://code.cn.ibm.com/schema/spring/rws"
+    xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+    http://cxf.apache.org/core http://cxf.apache.org/schemas/core.xsd
+    http://cxf.apache.org/jaxws http://cxf.apache.org/schemas/jaxws.xsd
+    http://cxf.apache.org/policy http://cxf.apache.org/schemas/policy.xsd
+    http://www.springframework.org/schema/jee http://www.springframework.org/schema/jee/spring-jee.xsd
+    http://cxf.apache.org/bindings/soap http://cxf.apache.org/schemas/configuration/soap.xsd
+    http://www.springframework.org/schema/context  http://www.springframework.org/schema/context/spring-context.xsd
+    http://www.springframework.org/schema/security http://www.springframework.org/schema/security/spring-security.xsd
+    http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop.xsd
+    http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx.xsd
+    http://code.cn.ibm.com/schema/spring/rws http://code.cn.ibm.com/schema/spring/rws.xsd">
+
+	<context:property-placeholder location="classpath:redis.properties" />
+	<bean id="jedisPoolConfig" class="redis.clients.jedis.JedisPoolConfig">
+		<property name="maxTotal" value="${redis.pool.maxTotal}" />
+		<property name="maxIdle" value="${redis.pool.maxIdle}" />
+		<property name="maxWaitMillis" value="${redis.pool.maxWaitMillis}" />
+		<property name="testOnBorrow" value="${redis.pool.testOnBorrow}" />
+	</bean>
+	
+	<!-- 配置方式1:对于dbIndex未起作用 -->
+	<bean id="shardedJedisPool1" class="redis.clients.jedis.ShardedJedisPool" >
+		<constructor-arg index="0" ref="jedisPoolConfig" />
+		<constructor-arg index="1">
+			<list>
+				<bean class="redis.clients.jedis.JedisShardInfo">
+					<constructor-arg index="0" value="${redis1.ip}" />
+					<constructor-arg index="1" value="${redis1.port}" type="int" />
+					<constructor-arg value="${redis1.name}"/>
+					<!-- <constructor-arg value="instance:01"/> -->
+					<!-- <property name="password" value="${redis1.auth}"/> -->
+				</bean>
+				<bean class="redis.clients.jedis.JedisShardInfo">
+					<constructor-arg index="0" value="${redis2.ip}" />
+					<constructor-arg index="1" value="${redis2.port}" type="int" />
+					<constructor-arg value="${redis2.name}"/>
+					<property name="password" value="${redis2.auth}"/>
+				</bean>
+			</list>
+		</constructor-arg>
+	</bean>
+	
+	<!-- 配置方式2 -->
+	<bean id="uri1" class="java.net.URI">
+		<constructor-arg index="0" value="${redis1.uri}" />
+	</bean>
+	<bean id="uri2" class="java.net.URI">
+		<constructor-arg index="0" value="${redis2.uri}" />
+	</bean>
+	<bean id="shardedJedisPool2" class="redis.clients.jedis.ShardedJedisPool">
+		<constructor-arg index="0" ref="jedisPoolConfig" />
+		<constructor-arg index="1">
+			<list>
+				<bean class="redis.clients.jedis.JedisShardInfo">
+					<constructor-arg index="0" ref="uri1"/>
+				</bean>
+				<bean class="redis.clients.jedis.JedisShardInfo">
+					<constructor-arg index="0" ref="uri2"/>
+				</bean>
+			</list>
+		</constructor-arg>
+	</bean>
+	
+	<!-- 配置方式3 -->
+	<bean id="shardedJedisPool3" class="redis.clients.jedis.ShardedJedisPool">
+		<constructor-arg index="0" ref="jedisPoolConfig" />
+		<constructor-arg index="1">
+			<list>
+				<bean class="redis.clients.jedis.JedisShardInfo">
+					<constructor-arg index="0" value="${redis1.uri}"/>
+				</bean>
+				<bean class="redis.clients.jedis.JedisShardInfo">
+					<constructor-arg index="0" value="${redis2.uri}"/>
+				</bean>
+			</list>
+		</constructor-arg>
+	</bean>
+	
+</beans>

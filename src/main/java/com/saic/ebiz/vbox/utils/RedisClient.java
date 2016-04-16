@@ -29,11 +29,13 @@ public class RedisClient {
     private static Logger logger = LoggerFactory.getLogger(RedisClient.class);
 
     //初始化常量信息,dbIndex1从0开始
-    private static final int dbIndex1=1;
-    private static final String host1="192.168.2.182";
+    private static final int dbIndex1=3;
+//    private static final String host1="192.168.2.182";
+    private static final String host1="127.0.0.1";
     private static final int port1=6379;
     private static final String auth1="jh123";
-    private static final String host2="192.168.2.192";
+//    private static final String host2="192.168.2.192";
+    private static final String host2="127.0.0.1";
     private static final int port2=6379;
     private static final int dbIndex2=2;
     private static final String auth2="jh123";
@@ -90,6 +92,7 @@ public class RedisClient {
 
     /**
      * @Description: jedispool初始化
+     * 保存到db=2中去了,最后一个添加的机器ip有效,且使用了其对应的dbIndex.
      */
     protected static synchronized boolean init() {
         List<JedisShardInfo> shards = new ArrayList<JedisShardInfo>();
