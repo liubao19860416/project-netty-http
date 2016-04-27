@@ -23,7 +23,7 @@ import us.codecraft.webmagic.pipeline.MultiPagePipeline;
 //继承jfinal中的Model
 //实现AfterExtractor接口可以在填充属性后进行其他操作
 @TargetUrl("http://my.oschina.net/flashsword/blog/*")
-public class OschinaBlog extends Model<OschinaBlog> implements AfterExtractor {
+public class LieTouJobInfo extends Model<LieTouJobInfo> implements AfterExtractor {
  
     //用ExtractBy注解的字段会被自动抽取并填充
     //默认是xpath语法
@@ -37,6 +37,21 @@ public class OschinaBlog extends Model<OschinaBlog> implements AfterExtractor {
     //multi标注的抽取结果可以是一个List
     @ExtractBy(value = "//div[@class='BlogTags']/a/text()", multi = true)
     private List<String> tags;
+    
+    public void process(Page page) {
+        page.addTargetRequests(page.getHtml().links().regex("(https://github\\.com/\\w+/\\w+)").all());
+        page.addTargetRequests(page.getHtml().links().regex("(https://github\\.com/\\w+)").all());
+        GithubRepo githubRepo = new GithubRepo();
+        githubRepo.setName(page.getUrl().regex("https://github\\.com/(\\w+)/.*").toString());
+        githubRepo.setName(page.getHtml().xpath("//h1[@class='entry-title public']/strong/a/text()").toString());
+        githubRepo.setReadme(page.getHtml().xpath("//div[@id='readme']/tidyText()").toString());
+        if (githubRepo.getName() == null) {
+            //skip this page
+            page.setSkip(true);
+        } else {
+            page.putField("repo", githubRepo);
+        }
+    }
  
     @Override
     public void afterProcess(Page page) {
@@ -52,7 +67,7 @@ public class OschinaBlog extends Model<OschinaBlog> implements AfterExtractor {
         C3p0Plugin c3p0Plugin = new C3p0Plugin("jdbc:mysql://127.0.0.1/webmagic?characterEncoding=utf-8", "root", "root");
         c3p0Plugin.start();
         ActiveRecordPlugin activeRecordPlugin = new ActiveRecordPlugin(c3p0Plugin);
-        activeRecordPlugin.addMapping("blog", OschinaBlog.class);
+        activeRecordPlugin.addMapping("blog", LieTouJobInfo.class);
         activeRecordPlugin.start();
         //启动webmagic
         OOSpider.create(Site
@@ -66,7 +81,7 @@ public class OschinaBlog extends Model<OschinaBlog> implements AfterExtractor {
                 .addCookie("dotcomt_user","code4craft")
                 .addHeader("Referer","https://github.com")
                 .setHttpProxy(new HttpHost("127.0.0.1",8080))
-                .addStartUrl("http://my.oschina.net/flashsword/blog/145796"), OschinaBlog.class)
+                .addStartUrl("http://my.oschina.net/flashsword/blog/145796"), LieTouJobInfo.class)
 //        .clearPipeline()
 //        .pipeline(new MultiPagePipeline())
 //        .pipeline(new ConsolePipeline())

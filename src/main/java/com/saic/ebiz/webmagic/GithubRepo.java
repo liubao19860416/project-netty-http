@@ -20,9 +20,34 @@ public class GithubRepo {
 
     @ExtractBy("//div[@id='readme']/tidyText()")
     private String readme;
+    
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public String getAuthor() {
+        return author;
+    }
+
+    public void setAuthor(String author) {
+        this.author = author;
+    }
+
+    public String getReadme() {
+        return readme;
+    }
+
+    public void setReadme(String readme) {
+        this.readme = readme;
+    }
+
 
     public static void main(String[] args) {
-        OOSpider.create(Site.me().setSleepTime(1000),
+        OOSpider.create(Site.me().setSleepTime(3000),
                 new ConsolePageModelPipeline(), GithubRepo.class)
                 .addUrl("https://github.com/code4craft").thread(5).run();
     }
