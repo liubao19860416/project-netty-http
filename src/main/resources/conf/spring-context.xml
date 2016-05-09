@@ -28,7 +28,15 @@
 		<property name="localDir" value="/home/deploy/deploy/logs/" />
 	</bean>
 	
+	<!-- <bean id="propertyConfigurer" class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
+		<property name="locations">
+			<list>
+				<value>classpath:config.properties</value>
+			</list>
+		</property>
+	</bean> -->
 	<context:property-placeholder location="classpath:config.properties" />
+	
 	<!-- <bean id="gprsServerBootstrap" class="com.saic.ebiz.vbox.GprsServerBootstrap" init-method="start" destroy-method="stop" scope="singleton">
 		<property name="connectionTimeout" value="${ebiz.liteplus.netty.connectionTimeout}" />
 		<property name="port" value="${ebiz.liteplus.netty.port}" />

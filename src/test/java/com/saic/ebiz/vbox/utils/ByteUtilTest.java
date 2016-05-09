@@ -1,5 +1,6 @@
 package com.saic.ebiz.vbox.utils;
 
+import java.nio.charset.Charset;
 import java.util.Arrays;
 
 import org.apache.commons.codec.binary.Hex;
@@ -28,6 +29,8 @@ public class ByteUtilTest {
     @Test
     @SuppressWarnings("deprecation")
     public void testMain() throws ChecksumException {
+        String str="EF3D5B5CC2EAAEECECD2BD8CC8AD12A3BF900ADA";
+        System.out.println("转换结果为:"+new String(ByteUtil.hexString2Bytes(str),Charset.forName("UTF-8")));
 //      byte[] src=new byte[]{0x01,0x02,0x01,0x01,0x01,0x02,0x03,0x04,0x05,0x06,0x07,0x01,0x01,'1',0x30};
         byte[] src=new byte[]{0x01,0x02,0x00,0x00,0x01,0x02,0x03,0x04,0x05,0x06,0x07,0x01,0x02};
         String bytes2HexString = ByteUtil.bytes2HexString(src);
