@@ -65,22 +65,9 @@
     </appender>
 	
 	
-    <!--===============================  日志输出: MQ业务 ================================-->
-    <logger name="org.apache.activemq" additivity="false">
-        <level value="debug" />
-        <appender-ref ref="MQ" />
-    </logger>
-    <logger name="org.springframework.jms" additivity="false">
-        <level value="debug" />
-        <appender-ref ref="MQ" />
-    </logger>
-	<logger name="com.saic.ebiz.vbox.mq" additivity="true">
-		<level value="debug" />
-		<appender-ref ref="MQ" />
-	</logger>
 	<!--============================ 按照每天生成日志文件：mybatis系统日志 ========================== -->
-	<logger name="org.apache.ibatis" additivity="true">
-		<level value="debug" />
+	<!-- <logger name="org.apache.ibatis" additivity="true">
+		<level value="debug" />MYBATIS
 		<appender-ref ref="MYBATIS" />
 	</logger>
 	<logger name="java.sql.Connection" additivity="false">
@@ -102,7 +89,7 @@
 	<logger name="com.saic.ebiz.vbox.dao" additivity="true">
 		<level value="debug" />
 		<appender-ref ref="MYBATIS" />
-	</logger>
+	</logger> -->
     <!--===============================  日志输出: 默认APP主项目 ================================-->
     <logger name="com.saic.ebiz.vbox" additivity="true">
         <level value="info" />

@@ -11,6 +11,7 @@
 		<timestamp>${maven.build.timestamp}</timestamp>
 		<maven.build.timestamp.format>yyyyMMddHHmm</maven.build.timestamp.format>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+		<!-- <app.main.class>com.saic.ebiz.vbox.Application2</app.main.class> -->
 		<spring.version>4.2.4.RELEASE</spring.version>
 		<!-- <spring.version>4.1.7.RELEASE</spring.version> -->
 		<!-- <spring.version>3.2.3.RELEASE</spring.version> -->
